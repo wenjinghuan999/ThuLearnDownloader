@@ -1,5 +1,7 @@
 清华网络学堂下载器 v1.0-beta
 ==
+`下载地址` https://github.com/wenjinghuan999/ThuLearnDownloader/releases/tag/v1.0-beta
+
 功能
 --
 - 批量下载网络学堂上的“课程文件”、“教学资源”和“课程作业”中的文件。
