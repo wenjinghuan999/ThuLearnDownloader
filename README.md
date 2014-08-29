@@ -1,6 +1,8 @@
 清华网络学堂下载器 v1.0-beta
 ==
-`下载地址` https://github.com/wenjinghuan999/ThuLearnDownloader/releases/tag/v1.0-beta
+
+[`下载地址`](https://github.com/wenjinghuan999/ThuLearnDownloader/releases/tag/v1.0-beta)
+[`源代码`](https://github.com/wenjinghuan999/ThuLearnDownloader/blob/master/README.md)
 
 功能
 --
