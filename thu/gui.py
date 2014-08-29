@@ -5,14 +5,14 @@
 
 import urllib.request
 import os
-from stat import *
-from thu.constants import *
+import time
+from stat import ST_SIZE
 from tkinter import *
 from tkinter.ttk import *
 from tkinter.constants import *
 from tkinter.messagebox import *
-from thu import BrowserNavigator
-from http.cookies import SimpleCookie
+from thu.constants import *
+from thu import browsernavigator
 from progress_bar import InitBar
 
 class LearnDownloaderGui(object):
@@ -32,7 +32,8 @@ class LearnDownloaderGui(object):
                                (STR_WARES, self.__download_wares),
                                (STR_HOMEWORKS, self.__download_homeworks),
                                ];
-        print(STR_README);
+        os.system('cls' if os.name == 'nt' else 'clear');
+        print(STR_README.replace("_", " "));
         sys.stdin.readline();
         self.showlogin();
         
@@ -44,18 +45,18 @@ class LearnDownloaderGui(object):
         del self.filelist;
         
     def showlogin(self):
-        self.__initgui(STR_TITLE_LOGIN, 300, 150);
+        self.__initgui(STR_TITLE_LOGIN, DLG_LOGIN_WIDTH, DLG_LOGIN_HEIGHT);
         win = Frame(self.root);
         win.pack(side=TOP, expand=YES, fill=NONE);
         widget_userid = Frame(win);
         widget_userpass = Frame(win);
         Label(widget_userid, text=STR_USERID_TEXT).pack(side=LEFT, expand=NO, fill=X);
         self.userid = Entry(widget_userid, state=NORMAL);
-        self.userid.insert(0, "wenjh10");
+        self.userid.insert(0, USERNAME);
         self.userid.pack(side=LEFT, expand=NO, fill=X);
         Label(widget_userpass, text=STR_USERPASS_TEXT).pack(side=LEFT, expand=NO, fill=X);
         self.userpass = Entry(widget_userpass, state=NORMAL, show="*");
-        self.userpass.insert(0, "wjh19920119");
+        self.userpass.insert(0, PASSWORD);
         self.userpass.pack(side=LEFT, expand=NO, fill=X);
         widget_userid.pack(side=TOP, expand=YES, fill=NONE);
         widget_userpass.pack(side=TOP, expand=YES, fill=NONE);
@@ -69,7 +70,7 @@ class LearnDownloaderGui(object):
         userid = self.userid.get();
         userpass = self.userpass.get();
         self.__disablelogin();
-        self.lbn = BrowserNavigator.LearnBrowserNavigator();
+        self.lbn = browsernavigator.LearnBrowserNavigator();
         if self.lbn is None:
             print(STR_ALL_BROWSER_FAILED);
             return None;
@@ -105,7 +106,7 @@ class LearnDownloaderGui(object):
         del self.root;
         
     def showsemesters(self, semesters):
-        self.__initgui(STR_TITLE_SEMESTER, 300, 150);
+        self.__initgui(STR_TITLE_SEMESTER, DLG_SEMESTER_WIDTH, DLG_SEMESTER_HEIGHT);
         win = Frame(self.root);
         win.pack(side=TOP, expand=YES, fill=NONE);
         widget_left = LabelFrame(win, text=STR_FRAME_ITEMS);
@@ -127,10 +128,10 @@ class LearnDownloaderGui(object):
         widget_path = Frame(win);
         Label(widget_path, text=STR_PATH_TEXT).pack(side=LEFT, expand=NO, fill=X);
         self.path = Entry(widget_path);
-        self.path.insert(0, "E:\\Downloads\\THULearnDownload\\");
-        self.path.pack(side=LEFT, expand=NO, fill=X);
+        self.path.insert(0, DOWNLOAD_PATH);
+        self.path.pack(side=LEFT, expand=YES, fill=X);
         Button(win, text=STR_BTN_OK_TEXT, command=self.onclick_semester).pack(side=BOTTOM, expand=YES, fill=NONE);
-        widget_path.pack(side=BOTTOM, expand=YES, fill=NONE);
+        widget_path.pack(side=BOTTOM, expand=YES, fill=X);
         widget_left.pack(side=LEFT, expand=YES, fill=NONE);
         Label(win, text="").pack(side=LEFT, expand=YES, fill=NONE);
         widget_right.pack(side=RIGHT, expand=YES, fill=NONE);
@@ -168,6 +169,9 @@ class LearnDownloaderGui(object):
     def download(self, path):
         self.log = open(path + FILENAME_DOWNLOAD_LOG, "w");
         self.filelist = open(path + FILENAME_FILELIST, "w");
+        starttime = time.time();
+        self.filecount = 0;
+        self.filesizesum = 0;
         for (name, link) in self.semesters:
             print(STR_PROCESSING_SEMESTER % name);
             courses = self.lbn.selectsemester(link);
@@ -183,8 +187,18 @@ class LearnDownloaderGui(object):
                 for func in self.downloaditems:
                     func(course, currpath);
                 self.lbn.closecourse();
+        duration = time.time() - starttime;
+        os.system('cls' if os.name == 'nt' else 'clear');
+        self.__log(STR_SUMMARY.replace("_", " ") % tuple(
+                    list(LearnDownloaderGui.__formattime(duration)) +
+                    [os.path.abspath(path)] +
+                    [self.filecount] +
+                    list(LearnDownloaderGui.__formatsize(self.filesizesum))
+                    ));
         self.log.close();
         self.filelist.close();
+        print(STR_ON_EXIT);
+        sys.stdin.readline();
     
     def __download_downloads(self, course, currpath):
         files = self.lbn.getdownloads();
@@ -281,6 +295,8 @@ class LearnDownloaderGui(object):
         del p;
             
         f.close();
+        self.filecount += 1;
+        self.filesizesum += length;
         return filename;
     
     def __getcookie(self):
@@ -346,6 +362,13 @@ class LearnDownloaderGui(object):
             size /= 1024;
             if size < 1000:
                 return (size, LIST_STR_UNIT[cnt]);
+            
+    @staticmethod
+    def __formattime(time):
+        hh = int(time / 3600);
+        mm = int(time / 60) % 60;
+        ss = int(time) % 60;
+        return (hh, mm, ss);
     
     @staticmethod
     def __getstringattribute(s, attr):

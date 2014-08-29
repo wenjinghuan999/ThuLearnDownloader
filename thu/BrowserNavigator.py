@@ -5,12 +5,13 @@
 
 import time
 import re
+import json
 from thu.constants import *
 from tkinter.messagebox import *
 from selenium import webdriver, selenium
-from selenium.common.exceptions import WebDriverException,\
-    UnexpectedAlertPresentException, NoAlertPresentException,\
-    NoSuchFrameException, NoSuchElementException, StaleElementReferenceException
+from selenium.common.exceptions import *
+from selenium.webdriver.firefox import firefox_profile
+from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 
 class LearnBrowserNavigator(object):
     '''
@@ -21,6 +22,16 @@ class LearnBrowserNavigator(object):
         '''
         Constructor
         '''
+        MY_WEBDRIVER_PREFERENCES = "./profiles/firefox_pref.json";
+        MY_WEBDRIVER_EXT = "./profiles/firefox_ext.xpi";
+        class MyFirefoxProfile(FirefoxProfile):
+            def __init__(self, profile_directory=None):
+                with open(MY_WEBDRIVER_PREFERENCES) as default_prefs:
+                    FirefoxProfile.DEFAULT_PREFERENCES = json.load(default_prefs);
+                    FirefoxProfile.__init__(self, profile_directory);
+            def add_extension(self, extension=MY_WEBDRIVER_EXT):
+                self._install_extension(extension)
+                    
         iecapabilities = {
             "browserName": "internet explorer",
             "version": "",
@@ -28,21 +39,23 @@ class LearnBrowserNavigator(object):
             "javascriptEnabled": True,
             "ie.ensureCleanSession": True
         }
-        browsers = [#{'name': STR_FIREFOX, 'driver': webdriver.Firefox, 'args': {}},
-                    {'name': STR_CHROME, 'driver': webdriver.Chrome, 'args': {}},
-                    {'name': STR_IE, 'driver': webdriver.Ie, 'args': {'capabilities': iecapabilities}},
-                    {'name': STR_IE_64, 'driver': webdriver.Ie, 'args': {'executable_path': "IEDriverServerx64.exe", 'capabilities': iecapabilities}},
+        browsers = [{'name': STR_FIREFOX, 'enabled': USE_FIREFOX, 'driver': webdriver.Firefox, 'args': {'firefox_profile': MyFirefoxProfile()}},
+                    {'name': STR_CHROME, 'enabled': USE_CHROME, 'driver': webdriver.Chrome, 'args': {}},
+                    {'name': STR_IE, 'enabled': USE_IE, 'driver': webdriver.Ie, 'args': {'capabilities': iecapabilities}},
+                    {'name': STR_IE_64, 'enabled': USE_IE_64, 'driver': webdriver.Ie, 'args': {'executable_path': "IEDriverServerx64.exe", 'capabilities': iecapabilities}},
                     ];
 #         browsers = {STR_CHROME: webdriver.Chrome};
         for browser in browsers:
-#             try:
-            print(STR_OPENING_BROWSER % browser['name']);
-            self.browser = browser['driver'](**browser['args']);
-            self.browsername = browser['name'];
-            break;
-#             except WebDriverException:
-#                 print(STR_OPEN_BROWSER_FAILED % browser['name']);
-#                 continue;
+            if browser['enabled'] == 0:
+                continue;
+            try:
+                print(STR_OPENING_BROWSER % browser['name']);
+                self.browser = browser['driver'](**browser['args']);
+                self.browsername = browser['name'];
+                break;
+            except:
+                print(STR_OPEN_BROWSER_FAILED % browser['name']);
+                continue;
         else:
             return None;
     
@@ -51,11 +64,15 @@ class LearnBrowserNavigator(object):
         Destructor
         '''
         print(STR_CLOSING_BROWSER);
-#         self.browser.quit();
+        self.browser.quit();
     
     def login(self, userid, userpass):
         print(STR_VISIT);
-        self.browser.get(URL_LEARN);
+        try:
+            self.browser.get(URL_LEARN);
+        except:
+            print(STR_ELEMENT_NOT_FOUND_ERROR);
+            return None;
         self.__navtologinwindow();
         print(STR_LOGING_IN);
         while True:
@@ -70,11 +87,6 @@ class LearnBrowserNavigator(object):
         self.browser.find_element_by_name("userpass").send_keys(userpass);
         self.browser.find_element_by_name("submit1").click();
         if self.__checkloginstate() == False:
-            return None;
-        try:
-            self.browser.switch_to.frame("content_frame");
-        except NoSuchFrameException:
-            print(STR_ELEMENT_NOT_FOUND_ERROR);
             return None;
         semesters_list = [];
         for link in LIST_URL_POSSIBLE_SEMESTERS:
@@ -234,14 +246,25 @@ class LearnBrowserNavigator(object):
             return False;
     
     def __checkloginstate(self):
-        try:
-            alert = self.browser.switch_to.alert;
-            alert_text = alert.text;
-            showerror(STR_MSGBOX_TITLE_ERROR, STR_LOGIN_FAILED % alert_text);
-            alert.accept();
-            return False;
-        except NoAlertPresentException:
-            return True;
+        while True:
+            try:
+                alert = self.browser.switch_to.alert;
+                alert_text = alert.text;
+                if alert_text.startswith(STR_THULEARN_AUTH_ERROR) or alert_text.startswith(STR_THULEARN_PASS_ERROR):
+                    alert.accept();
+                    showerror(STR_MSGBOX_TITLE_ERROR, STR_LOGIN_FAILED % alert_text);
+                    return False;
+                else:
+                    print(STR_ALERT_DISMISS % alert_text);
+                    alert.dismiss();
+                    continue;
+            except NoAlertPresentException:
+                try:
+                    self.browser.switch_to.frame("content_frame");
+                    return True;
+                except NoSuchFrameException:
+                    time.sleep(WAITING_TIME);
+                    continue;
             
     def __findsemester(self, link):
         try:
