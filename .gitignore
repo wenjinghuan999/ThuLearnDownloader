@@ -182,7 +182,6 @@ $RECYCLE.BIN/
 # Mac crap
 .DS_Store
 
-
 #############
 ## Python
 #############
@@ -267,3 +266,10 @@ docs/_build/
 
 # PyBuilder
 target/
+
+#############
+# Project Setting
+#############
+
+thu/__pycache__/
+dist/
