@@ -8,7 +8,9 @@ import py2exe
 includes = ["thu.constants"];
 packages = ["thu"];
 files = [("drivers",  
-                ["./drivers/chromedriver.exe", "./drivers/IEDriverServer.exe", "./drivers/IEDriverServerx64.exe"])
+                ["./drivers/chromedriver.exe", "./drivers/IEDriverServer.exe", "./drivers/IEDriverServerx64.exe"]),
+         (".",  
+                ["./thu/settings.cfg"])
             ];
 # excludes = ["readline", "win32api", "win32con"];
 excludes = [];
