@@ -102,10 +102,10 @@ class LearnBrowserNavigator(object):
         return semesters_list;
     
     def selectsemester(self, link):
-        semester = self.__findsemester(link);
-        if semester is None:
-            print(STR_ELEMENT_NOT_FOUND_ERROR);
-            return None;
+        while True:
+            semester = self.__findsemester(link);
+            if semester is not None:
+                break;
         element = semester['element'];
         if element is not None:
             element.click();

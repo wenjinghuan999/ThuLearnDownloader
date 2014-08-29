@@ -188,7 +188,7 @@ class LearnDownloaderGui(object):
                     func(course, currpath);
                 self.lbn.closecourse();
         duration = time.time() - starttime;
-        os.system('cls' if os.name == 'nt' else 'clear');
+#         os.system('cls' if os.name == 'nt' else 'clear');
         self.__log(STR_SUMMARY.replace("_", " ") % tuple(
                     list(LearnDownloaderGui.__formattime(duration)) +
                     [os.path.abspath(path)] +
