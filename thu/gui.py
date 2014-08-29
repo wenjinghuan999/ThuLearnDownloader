@@ -12,7 +12,7 @@ from tkinter.ttk import *
 from tkinter.constants import *
 from tkinter.messagebox import *
 from thu.constants import *
-from thu import browsernavigator
+from thu.browser import LearnBrowserNavigator
 from progress_bar import InitBar
 
 class LearnDownloaderGui(object):
@@ -70,7 +70,7 @@ class LearnDownloaderGui(object):
         userid = self.userid.get();
         userpass = self.userpass.get();
         self.__disablelogin();
-        self.lbn = browsernavigator.LearnBrowserNavigator();
+        self.lbn = LearnBrowserNavigator();
         if self.lbn is None:
             print(STR_ALL_BROWSER_FAILED);
             return None;
