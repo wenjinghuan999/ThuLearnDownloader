@@ -88,6 +88,12 @@ class LearnBrowserNavigator(object):
         self.browser.find_element_by_name("submit1").click();
         if self.__checkloginstate() == False:
             return None;
+        while True:
+            try:
+                self.browser.find_element_by_class_name("text_nr2");
+                break;
+            except NoSuchElementException:
+                pass;
         semesters_list = [];
         for link in LIST_URL_POSSIBLE_SEMESTERS:
             semester = self.__findsemester(link);

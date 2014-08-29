@@ -5,7 +5,6 @@
 import os
 import sys
 from thu.constants import *
-from thu import browsernavigator
 from thu import gui
 
 if __name__ == '__main__': 
