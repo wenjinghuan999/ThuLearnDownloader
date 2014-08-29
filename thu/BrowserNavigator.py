@@ -28,7 +28,7 @@ class LearnBrowserNavigator(object):
             "javascriptEnabled": True,
             "ie.ensureCleanSession": True
         }
-        browsers = [{'name': STR_FIREFOX, 'driver': webdriver.Firefox, 'args': {}},
+        browsers = [#{'name': STR_FIREFOX, 'driver': webdriver.Firefox, 'args': {}},
                     {'name': STR_CHROME, 'driver': webdriver.Chrome, 'args': {}},
                     {'name': STR_IE, 'driver': webdriver.Ie, 'args': {'capabilities': iecapabilities}},
                     {'name': STR_IE_64, 'driver': webdriver.Ie, 'args': {'executable_path': "IEDriverServerx64.exe", 'capabilities': iecapabilities}},
@@ -203,22 +203,23 @@ class LearnBrowserNavigator(object):
         while True:
             try:
                 self.browser.find_element_by_name("Submit");
+                break;
             except NoSuchElementException:
-                continue;
-            break;
+                pass;
+#         time.sleep(WAITING_TIME);
         l = self.__findhomeworkdownloads();
         files = [e.get_attribute("href") for e in l];
         return files;
         
-    def getbackfromhomeworkfiles(self):
-        self.browser.back();
-        while True:
-            try:
-                self.browser.find_element_by_name("submit_hw");
-            except NoSuchElementException:
-                continue;
-            break;
-        time.sleep(WAITING_TIME);
+#     def getbackfromhomeworkfiles(self):
+#         self.browser.back();
+#         while True:
+#             try:
+#                 self.browser.find_element_by_name("submit_hw");
+#                 break;
+#             except NoSuchElementException:
+#                 pass;
+#         time.sleep(WAITING_TIME);
     
     def closecourse(self):
         self.browser.close();

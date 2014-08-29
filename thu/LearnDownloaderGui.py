@@ -140,9 +140,8 @@ class LearnDownloaderGui(object):
         
     def onclick_semester(self):
         path = self.path.get();
-        path += "/";
         try:
-            os.makedirs(path, exist_ok=True);
+            path = LearnDownloaderGui.__makedirs("", path);
         except OSError:
             showerror(STR_MSGBOX_TITLE_ERROR, STR_ILLEGAL_PATH);
             return None;
@@ -178,7 +177,7 @@ class LearnDownloaderGui(object):
                 continue;
             for course in courses:
                 print(STR_PROCESSING_COURSE % course[1]);
-                currpath = path + course[1] + "/";
+                currpath = LearnDownloaderGui.__makedirs(course[1], path);
                 self.__filelist(LOG_COURSE_SEP % course[1]);
                 self.lbn.selectcourse(course);
                 for func in self.downloaditems:
@@ -195,7 +194,6 @@ class LearnDownloaderGui(object):
             return False;
         if len(files) > 0:
             self.__filelist(LOG_ITEM_SEP % STR_DOWNLOADS);
-            os.makedirs(currpath, exist_ok=True);
             print(STR_DOWNLOADS);
             self.__download_files(files, currpath);
         return True;
@@ -204,18 +202,20 @@ class LearnDownloaderGui(object):
         n = self.lbn.gethomeworks();
         if n <= 0:
             return None;
-        currpath += STR_HOMEWORKS + "/";
-        os.makedirs(currpath, exist_ok=True);
+        currpath = LearnDownloaderGui.__makedirs(STR_HOMEWORKS, currpath);
         self.__filelist(LOG_ITEM_SEP % STR_HOMEWORKS);
-        for i in range(0, n):
+        i = 0;
+        while i < n:
             homework = self.lbn.gethomework(i);
             print(STR_PROCESSING_HOMEWORK % homework[1]);
             files = self.lbn.gethomeworkfiles(homework);
             if files is not None and len(files) > 0:
-                currcurrpath = currpath + homework[1] + "/";
-                os.makedirs(currcurrpath, exist_ok=True);
+                currcurrpath = LearnDownloaderGui.__makedirs(homework[1], currpath);
                 self.__download_files(files, currcurrpath);
-            self.lbn.getbackfromhomeworkfiles();
+            nn = self.lbn.gethomeworks();
+            if n < nn:
+                n = nn;
+            i += 1;
     
     def __download_wares(self, course, currpath):
         files = self.lbn.getwares();
@@ -225,8 +225,7 @@ class LearnDownloaderGui(object):
             return False;
         if len(files) > 0:
             self.__filelist(LOG_ITEM_SEP % STR_WARES);
-            currpath += STR_WARES + "/";
-            os.makedirs(currpath, exist_ok=True);
+            currpath = LearnDownloaderGui.__makedirs(STR_WARES, currpath);
             print(STR_WARES);
             self.__download_files(files, currpath);
         return True;
@@ -325,6 +324,21 @@ class LearnDownloaderGui(object):
     def __filelist(self, s):
         self.filelist.write(s);
         self.filelist.write("\n");
+    
+    @staticmethod
+    def __makedirs(dirname, path):
+        dirname = dirname.replace("\\", "_");
+        dirname = dirname.replace("/", "_");
+        dirname = dirname.replace(":", "_");
+        dirname = dirname.replace("*", "_");
+        dirname = dirname.replace("?", "_");
+        dirname = dirname.replace("\"", "_");
+        dirname = dirname.replace("<", "_");
+        dirname = dirname.replace(">", "_");
+        dirname = dirname.replace("|", "_");
+        path += dirname + "/";
+        os.makedirs(path, exist_ok=True);
+        return path;
     
     @staticmethod
     def __formatsize(size):
